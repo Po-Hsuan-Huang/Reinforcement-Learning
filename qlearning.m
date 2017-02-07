@@ -29,7 +29,6 @@ for episode=1:maxEpisodes
         Q(:,:,episode) = Q(:,:,episode-1);
     end
 
-    % initial state
     xt = 1;
     yt = 1;
     
@@ -41,15 +40,8 @@ for episode=1:maxEpisodes
         
         % action selection
         if rand()>eps
-            % greedy action selection
-            
-            % ---FILL IN CODE HERE----
-            % mQt: Q value of the selected action
-            % at:  selected action
-            % -------
-            
-            % randomly select one action if there are more than one with
-            % the same Q value
+            % greedy
+            [mQt,at] = max(Q((yt-1)*12 + xt, :, episode));
             atSameQ = find(Q((yt-1)*12 + xt, :, episode) == mQt);
             if length(atSameQ)>1
                 rndIdx = randperm(length(atSameQ),1);
@@ -57,10 +49,7 @@ for episode=1:maxEpisodes
             end
         else
             % epsilon exploration
-            
-            % ---FILL IN CODE HERE----
-            % at:  randomly selected action
-            % -------
+            at = randperm(4,1);
         end
         
         % state transition
@@ -88,31 +77,25 @@ for episode=1:maxEpisodes
             rt = 0;    % goal
         end
         
-        % calculte td error
+        % td err:
+        % ----------------------------------------------------------------
+        % calculate Q values
+        Qt  = Q((yt-1)*12  + xt, at, episode);
+        Qt1 = max(Q((yt1-1)*12 + xt1, :, episode));
         
-        % ---FILL IN CODE HERE----
-        % current state: (yt-1)*12 + xt
-        % current action: at
-        % current reward: rt
-        % next state: (yt1-1)*12 + xt1
-        % discount factor: gamma
-        %
-        % set the following variables:
-        % Qt:  Q value of this time step
-        % tderr: time difference error
-        % -------
+        tderr = rt + gamma * Qt1 - Qt;
+        % ----------------------------------------------------------------
         
         % update Q
         Q((yt-1)*12 + xt, at, episode) = Qt + alpha * tderr;
         
-        % stats...
         R(1,episode) = R(1,episode) + rt;
         
         % iterate...
         xt = xt1;
         yt = yt1;
         
-        % prevent endless loop
+        %
         iterations = iterations + 1;
     end
     
@@ -126,7 +109,7 @@ qlearn_R  = R;
 qlearn_Sa = Sa;
 qlearn_Q = Q;
 
-save('qlearn.mat', 'qlearn_R', 'qlearn_Sa', 'qlearn_Q');
+save('qlearn.mat', 'qlearn_R', 'qlearn_Sa', 'qlearn_Q', 'eps', 'alpha');
 
 clear all;
 

@@ -29,21 +29,14 @@ for episode=1:maxEpisodes
         Q(:,:,episode) = Q(:,:,episode-1);
     end
 
-    % initial state
     xt = 1;
     yt = 1;
     
     % action selection
     if rand()>eps
-        % greedy action selection
-            
-        % ---FILL IN CODE HERE----
-        % mQt: Q value of the selected action
-        % at:  selected action
-        % -------
+        % greedy
+        [mQt,at] = max(Q((yt-1)*12 + xt, :, 1));
         
-        % randomly select one action if there are more than one with
-        % the same Q value
         atSameQ = find(Q((yt-1)*12 + xt, :, 1) == mQt);
         if length(atSameQ)>1
             rndIdx = randperm(length(atSameQ),1);
@@ -51,10 +44,7 @@ for episode=1:maxEpisodes
         end
     else
         % epsilon exploration
-        
-        % ---FILL IN CODE HERE----
-        % at:  randomly selected action
-        % -------
+        at = randperm(4,1);
     end
     
     % simulate one episode
@@ -88,19 +78,12 @@ for episode=1:maxEpisodes
             rt = 0;    % goal
         end
         
-        % calculte td error
+        % td err:
         % ----------------------------------------------------------------
         % action selection
         if rand()>eps
             % greedy
-            
-            % ---FILL IN CODE HERE----
-            % mQt1: Q value of the selected action
-            % at1:  selected action
-            % -------
-            
-            % randomly select one action if there are more than one with
-            % the same Q value
+            [mQt1,at1] = max(Q((yt1-1)*12 + xt1, :, episode));
             at1SameQ = find(Q((yt1-1)*12 + xt1, :, episode) == mQt1);
             if length(at1SameQ)>1
                 rndIdx = randperm(length(at1SameQ),1);
@@ -108,31 +91,19 @@ for episode=1:maxEpisodes
             end
         else
             % epsilon exploration
-            
-            % ---FILL IN CODE HERE----
-            % at1:  randomly selected action
-            % -------
+            at1 = randperm(4,1);
         end
-
-        % ---FILL IN CODE HERE----
-        % current state: (yt-1)*12 + xt
-        % current action: at
-        % current reward: rt
-        % next state: (yt1-1)*12 + xt1
-        % next action: at1
-        % discount factor: gamma
-        %
-        % set the following variables:
-        % Qt:  Q value of this time step
-        % tderr: time difference error
-        % -------
         
+        % calculate Q values
+        Qt  = Q((yt-1)*12  + xt, at, episode);
+        Qt1 = Q((yt1-1)*12 + xt1, at1, episode);
+        
+        tderr = rt + gamma * Qt1 - Qt;
         % ----------------------------------------------------------------
         
         % update Q
         Q((yt-1)*12 + xt, at, episode) = Qt + alpha * tderr;
         
-        % stats...
         R(1,episode) = R(1,episode) + rt;
         
         % iterate...
@@ -140,7 +111,7 @@ for episode=1:maxEpisodes
         yt = yt1;
         at = at1;
         
-        % prevent endless loop
+        %
         iterations = iterations + 1;
     end
     
